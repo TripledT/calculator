@@ -8,7 +8,7 @@ export default class App extends React.Component {
     super();
     this.state = {
       contributionLimit: 18000,
-      salary: 117000,
+      salary: 117021,
       payFrequency: 26,
       remainingPayPeriods: 26,
       matchPercentage: 4,
@@ -53,34 +53,44 @@ export default class App extends React.Component {
     const amountOfMaxContributionNeeded = amountRemainingAfterMatch / maxContributionInSinglePayPeriod
 
     const amountRemainingAfterMaxContributions = (amountOfMaxContributionNeeded % 1) * maxContributionInSinglePayPeriod
-    const percentOfPayPeriodForRemainingAmount = amountRemainingAfterMaxContributions / payPerPeriod
     const percentageToReachLimit = Math.floor(this.state.contributionLimit / (payPerPeriod * remainingPayPeriods / 100))
 
-    const valueOfInitialPercentage = parseFloat(Math.floor(percentageToReachLimit/100 * payPerPeriod * remainingPayPeriods)).toFixed(2)
+    const valueOfInitialPercentage = percentageToReachLimit/100 * payPerPeriod * remainingPayPeriods
     const valueOfRemainder = contributionLimit - valueOfInitialPercentage
-    const valueUnreached = contributionLimit - valueOfInitialPercentage + valueOfRemainder
+    const percentageToReachRemainder = Math.floor(valueOfRemainder / payPerPeriod * 100)
+
+    const valueUnreached = contributionLimit - valueOfInitialPercentage - (percentageToReachRemainder/100 * payPerPeriod)
 
     this.setState({
       results: {
         normal: {
           initialPercentageToReachLimit: percentageToReachLimit,
-          valueOfInitialPercentage,
-          valueOfRemainder,
-          valueUnreached,
-          percentageToReachRemainder: Math.floor(valueOfRemainder / payPerPeriod * 100)
+          valueOfInitialPercentage: parseFloat(valueOfInitialPercentage).toFixed(2),
+          valueOfRemainder: parseFloat(valueOfRemainder).toFixed(2),
+          valueUnreached: parseFloat(valueUnreached).toFixed(2),
+          percentageToReachRemainder
         },
         frontLoad: {
-
+          initialPercentageToReachLimit: 0,
+          monthsForInitialPercentage: 0,
+          valueOfInitialPercentage: parseFloat(0).toFixed(2),,
         }
       }
     })
   }
 
   renderStandardMaxResults() {
-    const { normal } = this.state.results
+    const { normal, frontLoad } = this.state.results
 
     const result = (
       <div>
+        With a salary of
+        <font color="blue"> {this.state.salary} </font>
+        and a
+        <font color="blue"> {this.state.payFrequency} </font>
+        pay frequency.  Your total pay per period should be
+        <font color="blue"> {parseFloat(this.state.salary / this.state.payFrequency).toFixed(2)}.</font>
+        <br />
         In order to reach the 401k contribution limit, you may contribute
         <font color="red"> {normal.initialPercentageToReachLimit}% </font>
         per pay period to total
@@ -90,9 +100,15 @@ export default class App extends React.Component {
         <font color="red"> ${normal.valueOfRemainder} </font>
         can be reached by using an additional
         <font color="red"> {normal.percentageToReachRemainder}% </font>
-        in any pay period. With
+        (
+        <font color="red">{normal.initialPercentageToReachLimit + normal.percentageToReachRemainder}%</font>
+        ) in any pay period. With
         <font color="red"> {normal.valueUnreached} </font>
         remaining.
+        <br />
+        <br />
+        In order to front load your contributions, you may instead use your maximum contribution rate of
+        <font color="red">{this.state.maxContributionRate}%</font>
       </div>
     )
 
